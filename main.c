@@ -61,15 +61,15 @@ void init(void)
 	program[1] = loadShadersG("shaders/minimal.vert", "shaders/minimal.frag", "shaders/flatshading.gs");
 	program[2] = loadShadersG("shaders/minimal.vert", "shaders/minimal.frag", "shaders/cracking.gs");
 	program[3] = loadShadersG("shaders/minimal.vert", "shaders/black.frag", "shaders/wireframe.gs");
-	program[4] = loadShadersG("shaders/minimal.vert", "shaders/black.frag", "shaders/hair.gs");
+	program[4] = loadShadersG("shaders/hairvert.vert", "shaders/black.frag", "shaders/hair.gs");
 	
 	currentProgram = 1;
 	glUseProgram(program[currentProgram]);
 
 	// Upload geometry to the GPU:
-	m = LoadModelPlus("objects/cubeplus.obj");
+	m = LoadModelPlus("objects/stanford-bunny.obj");
 	CenterModel(m);
-	ScaleModel(m, 0.2, 0.2, 0.2);
+	ScaleModel(m, 0.5, 0.5, 0.5);
 	ReloadModelData(m);
 
 	modelToWorldMatrix = IdentityMatrix();
@@ -98,6 +98,7 @@ GLfloat a = 0.0;
 
 void display(void)
 {
+
 	// clear the screen
 	glClearColor(0.4, 0.4, 0.2, 1);
 	glClear(GL_COLOR_BUFFER_BIT + GL_DEPTH_BUFFER_BIT);
@@ -216,10 +217,7 @@ int main(int argc, char **argv)
   glutMouseFunc(mouseUpDown);
   glutMotionFunc(mouseDragged);
  
-  // initiering
-#ifdef WIN32
-  glewInit();
-#endif
+  reshape(800, 800);
   glutMainLoop();
   exit(0);
 }
