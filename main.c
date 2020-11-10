@@ -69,11 +69,11 @@ void init(void)
 	// Upload geometry to the GPU:
 	m = LoadModelPlus("objects/stanford-bunny.obj");
 	CenterModel(m);
-	ScaleModel(m, 0.5, 0.5, 0.5);
+	ScaleModel(m, 1, 1, 1);
 	ReloadModelData(m);
-
+	
 	modelToWorldMatrix = IdentityMatrix();
-	worldToViewMatrix = lookAt(0, 0.4, 1.4, 0, 0, 0, 0, 1, 0);
+	worldToViewMatrix = lookAt(0, 0.0, 3.5, 0, 0, 0, 0, 1, 0);
 	projectionMatrix = frustum(-0.4, 0.4, -0.4, 0.4, 1.0, 300.0);
 
 	for (i = 0; i < kNumPrograms; i++)
@@ -104,13 +104,14 @@ void display(void)
 	glClear(GL_COLOR_BUFFER_BIT + GL_DEPTH_BUFFER_BIT);
 	//Draw the shape first then the normals/hair
 	if (currentProgram == 4) {
-		glUseProgram(program[0]);
+		glUseProgram(program[1]);
 		mat4 modelViewMatrix = Mult(worldToViewMatrix, modelToWorldMatrix);
 		glUniformMatrix4fv(glGetUniformLocation(program[0], "modelViewMatrix"), 1, GL_TRUE, modelViewMatrix.m);
 		DrawModel(m, program[0], "inPosition", "inNormal", "inTexCoord");
 	}
 	glUseProgram(program[currentProgram]);
 	mat4 modelViewMatrix = Mult(worldToViewMatrix, modelToWorldMatrix);
+	glUniformMatrix4fv(glGetUniformLocation(program[currentProgram], "worldToViewMatrix"), 1, GL_TRUE, worldToViewMatrix.m);
 	glUniformMatrix4fv(glGetUniformLocation(program[currentProgram], "modelViewMatrix"), 1, GL_TRUE, modelViewMatrix.m);
 	DrawModel(m, program[currentProgram], "inPosition", "inNormal", "inTexCoord");
 	glutSwapBuffers();
@@ -137,7 +138,7 @@ void reshape(GLsizei w, GLsizei h)
     glViewport(0, 0, w, h);
     GLfloat ratio = (GLfloat) w / (GLfloat) h;
     projectionMatrix = perspective(90, ratio, 0.1, 1000);
-	modelViewMatrix = lookAt(cam.x, cam.y, cam.z,
+	modelViewMatrix  = lookAt(cam.x, cam.y, cam.z,
 											look.x, look.y, look.z, 
 											0,1,0);
 }
