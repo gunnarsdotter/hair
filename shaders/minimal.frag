@@ -1,1 +1,1 @@
-#version 150out vec4 outColor;in vec3 exNormalG; // Phongin vec2 texCoordG;uniform sampler2D tex;void main(void){	const vec3 light = vec3(0.58, 0.58, 0.58);	float shade;		shade = dot(normalize(exNormalG), light);	outColor = vec4(shade, shade, shade, 1.0);}
+#version 410 coreout vec4 outColor;in vec3 exNormalG; // Phonguniform sampler2D tex;void main(void){	const vec3 light = vec3(10.0, 10.0, 10.0);	float shade;		shade = dot(normalize(exNormalG),normalize( light));	outColor =vec4(0.58, 0.3, 0.0, 0.8)* vec4(shade, shade, shade, 1.0);}

@@ -41,6 +41,17 @@ GLuint program[kNumPrograms];
 int currentProgram;
 GLuint tex;
 
+
+// vertex array object
+unsigned int vertexArrayObjID;
+// Reference to shader program
+GLuint shader;
+
+// Tesselation control variables
+GLint TessLevelInner = 50;
+GLint TessLevelOuter = 70;
+int num = 6000;
+int num1 = 0;
 mat4 worldToViewMatrix, modelToWorldMatrix;
 mat4 modelViewMatrix, projectionMatrix;
 
@@ -49,35 +60,39 @@ void init(void)
 	int i;
 	mat4 camMatrix;
 	mat4 projectionMatrix;
-
+	 
 	// GL inits
 	glClearColor(1, 1, 1, 0);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
-	glCullFace(GL_TRUE);
+	glCullFace(GL_TRUE);;
 
 	// Load and compile shaders
-	program[0] = loadShadersG("shaders/minimal.vert", "shaders/minimal.frag", "shaders/passthrough.gs");
-	program[1] = loadShadersG("shaders/minimal.vert", "shaders/minimal.frag", "shaders/flatshading.gs");
-	program[2] = loadShadersG("shaders/minimal.vert", "shaders/minimal.frag", "shaders/cracking.gs");
-	program[3] = loadShadersG("shaders/minimal.vert", "shaders/black.frag", "shaders/wireframe.gs");
-	program[4] = loadShadersG("shaders/hairvert.vert", "shaders/black.frag", "shaders/hair.gs");
+	program[0] = loadShaders("shaders/skin.vs", "shaders/black.frag");
+	//program[1] = loadShadersG("shaders/minimal.vert", "shaders/minimal.frag", "shaders/flatshading.gs");
+	//program[2] = loadShadersG("shaders/minimal.vert", "shaders/minimal.frag", "shaders/cracking.gs");
+	//program[3] = loadShadersG("shaders/minimal.vert", "shaders/black.frag", "shaders/wireframe.gs");
+	//program[2] = loadShadersG("shaders/minimal.vs", "shaders/black.frag", "shaders/minimal.gs");
+	program[1] = loadShadersGT("shaders/hair.vs", "shaders/minimal.frag", "shaders/hair.gs", "shaders/hair.tcs", "shaders/hair.tes");
 	
 	currentProgram = 1;
 	glUseProgram(program[currentProgram]);
 
+
 	// Upload geometry to the GPU:
-	m = LoadModelPlus("objects/stanford-bunny.obj");
+	//m = LoadModelPlus("objects/stanford-bunny.obj");
+	m = LoadModelPlus("objects/teddy.obj");
 	CenterModel(m);
 	ScaleModel(m, 1, 1, 1);
 	ReloadModelData(m);
 	
 	modelToWorldMatrix = IdentityMatrix();
-	worldToViewMatrix = lookAt(0, 0.0, 3.5, 0, 0, 0, 0, 1, 0);
+	worldToViewMatrix = lookAt(0, 0.0, 7.5, 0, 0, 0, 0, 1, 0);
 	projectionMatrix = frustum(-0.4, 0.4, -0.4, 0.4, 1.0, 300.0);
 
 	for (i = 0; i < kNumPrograms; i++)
 	{
+
 		glUseProgram(program[i]);
 
 		glUniformMatrix4fv(glGetUniformLocation(program[i], "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
@@ -87,6 +102,7 @@ void init(void)
 		glUniform1i(glGetUniformLocation(program[i], "tex"), 0); // Texture unit 0
 		LoadTGATextureSimple("textures/maskros512.tga", &tex); // 5c
 	}
+
 }
 
 GLfloat a = 0.0;
@@ -96,24 +112,39 @@ GLfloat a = 0.0;
 // Desc:	sätter bone positionen i vertex shadern
 
 
+
+
 void display(void)
 {
 
 	// clear the screen
 	glClearColor(0.4, 0.4, 0.2, 1);
 	glClear(GL_COLOR_BUFFER_BIT + GL_DEPTH_BUFFER_BIT);
+
+	
 	//Draw the shape first then the normals/hair
-	if (currentProgram == 4) {
-		glUseProgram(program[1]);
+	if (currentProgram == 21) {
+		glUseProgram(program[0]);
 		mat4 modelViewMatrix = Mult(worldToViewMatrix, modelToWorldMatrix);
 		glUniformMatrix4fv(glGetUniformLocation(program[0], "modelViewMatrix"), 1, GL_TRUE, modelViewMatrix.m);
-		DrawModel(m, program[0], "inPosition", "inNormal", "inTexCoord");
+		DrawModel(m, program[0], "inPosition", "inNormal", NULL, GL_TRIANGLES);
 	}
 	glUseProgram(program[currentProgram]);
 	mat4 modelViewMatrix = Mult(worldToViewMatrix, modelToWorldMatrix);
+	//tesselation
+	glUniform1i(glGetUniformLocation(program[currentProgram], "TessLevelInner"), TessLevelInner);
+	glUniform1i(glGetUniformLocation(program[currentProgram], "TessLevelOuter"), TessLevelOuter);
+	
 	glUniformMatrix4fv(glGetUniformLocation(program[currentProgram], "worldToViewMatrix"), 1, GL_TRUE, worldToViewMatrix.m);
 	glUniformMatrix4fv(glGetUniformLocation(program[currentProgram], "modelViewMatrix"), 1, GL_TRUE, modelViewMatrix.m);
-	DrawModel(m, program[currentProgram], "inPosition", "inNormal", "inTexCoord");
+	
+	//Do what??
+	//glPatchParameteri(GL_PATCH_DEFAULT_OUTER_LEVEL, TessLevelOuter);
+	//glPatchParameteri(GL_PATCH_DEFAULT_INNER_LEVEL, TessLevelInner);
+	//glPatchParameteri(GL_PATCH_VERTICES, 3);
+	
+	
+	DrawModel(m, program[currentProgram], "inPosition", "inNormal", NULL, GL_PATCHES);
 	glutSwapBuffers();
 	glutPostRedisplay();
 }
@@ -196,7 +227,7 @@ void mouseDragged(int x, int y)
 //
 int main(int argc, char **argv)
 {
-  glutInit(&argc, argv);
+	glutInit(&argc, argv);
 
   glutInitWindowSize(800, 800); //change to H and W
   glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
@@ -207,7 +238,6 @@ int main(int argc, char **argv)
 #ifdef WIN32
   glewInit();
 #endif
-
   //glutDisplayFunc(DisplayWindow);
   glutTimerFunc(20, &OnTimer, 0);
   glutKeyboardFunc( keyboardFunc ); 

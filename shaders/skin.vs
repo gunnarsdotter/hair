@@ -1,0 +1,1 @@
+#version 410 corein  vec3 inPosition;in vec3 inNormal;out vec3 exNormalG;uniform mat4 modelViewMatrix;uniform mat4 projMatrix;void main(void){	mat3 normalMatrix1 = mat3(modelViewMatrix);	exNormalG =  normalMatrix1 * inNormal;	gl_Position = projMatrix * modelViewMatrix * vec4(inPosition, 1.0);}

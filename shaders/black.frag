@@ -1,1 +1,1 @@
-#version 150out vec4 outColor;in vec3 exNormalG; // Phongin vec2 texCoordG;uniform sampler2D tex;void main(void){	outColor = vec4(exNormalG.x, exNormalG.y, exNormalG.z, 1.0);}
+#version 410 coreout vec4 outColor;in vec3 exNormalG; // Phonguniform sampler2D tex;void main(void){	outColor = vec4(0.2, 0.2, 0.2, 1.0);}
